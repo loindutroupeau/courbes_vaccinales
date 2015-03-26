@@ -6,6 +6,8 @@ import xlrd
 import numpy
 import math
 
+import annotations
+
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)
@@ -24,7 +26,7 @@ def getCouv( couvStr ):
     if couvStr == "n/a":
         couv = numpy.nan
     elif couvStr == "-":
-        couv = 0
+        couv = -5
     else:
         couv = float(couvStr[0:-1])
     return couv
@@ -53,24 +55,24 @@ while nomPays != 'FIN':
     nomPays = cell( numCol, Lignes.PAYS_TRADUCTION )
 
 # crée et prépare la figure
-fig = plt.figure( 0, facecolor = "white", linewidth = 20, edgecolor = "gray" )
-plt.xlabel( u"Couverture du vaccin BCG (%) [intervalle si incertitude]" )
+sources = [u"Euro Surveill 2006;11(3): 6-11", "(http://opac.invs.sante.fr/doc_num.php?explnum_id=4827)"]
+fig = plt.figure( 0, figsize=(12, 6.4 + len(sources)*0.16), dpi=80, facecolor = "white", linewidth = 20, edgecolor = "gray" )
+
+plt.xlabel( u"Couverture du vaccin BCG (%)\n[intervalle si incertitude ; négatif si pas d'utilisation systématique]" )
 plt.ylabel( u'Incidence (taux pour 100.000)' )
 plt.annotate( u"Couverture BCG en 2003 et incidence selon les pays d'Europe", 
                            (0.5, 0.94), xycoords='figure fraction', ha='center', fontsize=14 )
 fig.subplots_adjust(bottom=0.2)
-plt.annotate( u"Sources : Euro Surveill 2006;11(3): 6-11 (http://opac.invs.sante.fr/doc_num.php?explnum_id=4827)", 
-                           (0.05, 0.05), xycoords='figure fraction', fontsize=9 )
 
 # trace des flèches pour indiquer certains pays
 decalage_fleches = {}
 decalage_fleches[u"Allemagne"] = [10,+10]
-decalage_fleches[u"France"] = [-12,+10]
+decalage_fleches[u"France"] = [-10,+12]
 decalage_fleches[u"Grèce"] = [-0,+15]
 decalage_fleches[u"Lituanie"] = [-20,+10]
-decalage_fleches[u"Portugal"] = [-20,+10]
+decalage_fleches[u"Portugal"] = [-17,+10]
 decalage_fleches[u"Roumanie"] = [-20,-10]
-decalage_fleches[u"Royaume-Uni"] = [-25,+15]
+decalage_fleches[u"Royaume-Uni"] = [-21,+15]
 decalage_fleches[u"Espagne"] = [10,10]
 for pays in bcg:
     if decalage_fleches.has_key(pays):
@@ -87,8 +89,11 @@ plt.scatter( max_couverture, incidence, c='b', s=30, marker='>' )
 plt.hlines( incidence, min_couverture, max_couverture, colors='b' )
 
 # ajuste les axes
-plt.xlim(0, 100)
+plt.xlim(-10, 100)
 plt.ylim(0, plt.ylim()[1])
-
+ 
+annotations.legende_sources( fig, plt, sources )
 plt.show()
-
+fig.savefig( '../figures/BCG_Europe.svg', transparent=False, dpi=fig.dpi )     
+fig.savefig( '../figures/autres_formats/BCG_Europe.png', transparent=False, dpi=fig.dpi )     
+fig.savefig( '../figures/autres_formats/BCG_Europe.jpeg', transparent=False, dpi=fig.dpi )        
