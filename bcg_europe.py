@@ -13,7 +13,7 @@ def enum(*sequential, **named):
     return type('Enum', (), enums)
 
 
-fichier = u"../Données_calculées/BCG_Europe.xls"
+fichier = u"../Données_recueillies/BCG_Europe.xls"
 classeur = xlrd.open_workbook( fichier )
 nom_des_feuilles = classeur.sheet_names()
 numFeuille = 0
@@ -92,7 +92,7 @@ plt.hlines( incidence, min_couverture, max_couverture, colors='b' )
 plt.xlim(-10, 100)
 plt.ylim(0, plt.ylim()[1])
  
-annotations.legende_sources( fig, plt, sources )
+annotations.legende_sources( fig, plt, sources, 0.08, 0.95 )
 plt.show()
 fig.savefig( '../figures/BCG_Europe.svg', transparent=False, dpi=fig.dpi )     
 fig.savefig( '../figures/autres_formats/BCG_Europe.png', transparent=False, dpi=fig.dpi )     

@@ -8,7 +8,7 @@ import pylab
 
 import annotations
 
-fichier = u"../Données_calculées/Incidence.xls"
+fichier = u"../Données_recueillies/Incidence.xls"
 classeur = xlrd.open_workbook( fichier )
 
 # Récupération du nom de toutes les feuilles sous forme de liste
@@ -51,7 +51,7 @@ while True:
     if not tableau.has_key( nomSources ):
         tableau[nomSources] = []
     source = feuillePays.cell_value( numCourbe, colonneSource )
-    print "ll", source in tableau[nomSources], source, tableau[nomSources]
+#    print "ll", source in tableau[nomSources], source, tableau[nomSources]
     fin = -1
     for col in range( 0, len( annees ) ):
         try:
@@ -272,7 +272,7 @@ def tracer_courbes( nom_maladie, rect_gros_plan, rect_couverture, date_gros_plan
     
     ax_couv.set_ylabel( legende, color='g')
     plt.axis([max( 1900, min(x[1:nb_annees_couverture]) ), max(x[1:nb_annees_couverture]), 0, 100])
-    annotations.legende_sources( fig, plt, sources )
+    annotations.legende_sources( fig, plt, sources, 0.07, 0.88 )
     plt.show()
     print "Sauvegarde de " + nom_maladie + '.svg, .jpeg et .png'
     fig.savefig( '../figures/' + nom_maladie + '.svg', transparent=False, dpi=fig.dpi )     
@@ -327,13 +327,13 @@ if( tracer_polio ):
     tracer_courbes( u'Poliomyélite', [0.37,0.39,0.5,0.57], [0.49,0.47,0.30,0.45], 1940, 1958 )
 
 if( tracer_rougeole ):
-    tracer_courbes( 'Rougeole', [0.22,0.29,0.6,0.67], [0.49,0.47,0.30,0.45], 1940, 1955 )
+    tracer_courbes( 'Rougeole', [0.37,0.29,0.45,0.67], [0.49,0.47,0.30,0.45], 1940, 1955 )
 
 if( tracer_scarlatine ):
     tracer_courbes( u'Scarlatine', [0.2,0.29,0.57,0.67], [0.49,0.47,0.30,0.45], 1910, 1940 )
 
 if( tracer_tetanos ):
-    tracer_courbes( u'Tétanos', [0.33,0.36,0.53,0.6], [0.49,0.47,0.30,0.45], 1950, 1940 )
+    tracer_courbes( u'Tétanos', [0.3,0.36,0.53,0.6], [0.49,0.47,0.30,0.45], 1950, 1940 )
 
 if( tracer_tuberculose ):
     tracer_courbes( u'Tuberculose', [0.42,0.39,0.4,0.57], [0.49,0.47,0.30,0.45], 1910, 1940 )

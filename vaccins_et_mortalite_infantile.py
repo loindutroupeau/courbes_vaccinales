@@ -139,7 +139,7 @@ def tracerPireCombinaison( mortalite, titre, vaccins, numGraphe ):
     tracerPoints( mortalite, titre, numGraphe, combi_pire_r, False, "\n" + listeVaccinTexte(combi_pire_r) )
     
     
-fichier = u"../Données_calculées/Vaccins_et_mortalité_infantile.xls"
+fichier = u"../Données_recueillies/Vaccins_et_mortalité_infantile.xls"
 classeur = xlrd.open_workbook( fichier )
 nom_des_feuilles = classeur.sheet_names()
 numFeuille = 0
@@ -236,7 +236,7 @@ if calculPireCombinaison:
     tracerPireCombinaison( mortalite_infantile, u'Taux de mortalité infantile', vaccins, 1 )       
     tracerPireCombinaison( mortalite_totale, u'Taux de mortalité', vaccins, 2 )
     
-annotations.legende_sources( fig, plt, sources )
+annotations.legende_sources( fig, plt, sources, 0.05, 0.95 )
 plt.show()
 fig.savefig( '../figures/Doses_infantiles_et_mortalité.svg', transparent=False, dpi=fig.dpi )     
 fig.savefig( '../figures/autres_formats/Doses_infantiles_et_mortalité.png', transparent=False, dpi=fig.dpi )     
