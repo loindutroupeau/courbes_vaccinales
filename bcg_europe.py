@@ -6,7 +6,7 @@ import xlrd
 import numpy
 import math
 
-import annotations
+import gestion_figures
 
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
@@ -75,7 +75,7 @@ decalage_fleches[u"Roumanie"] = [-20,-10]
 decalage_fleches[u"Royaume-Uni"] = [-21,+15]
 decalage_fleches[u"Espagne"] = [10,10]
 for pays in bcg:
-    if decalage_fleches.has_key(pays):
+    if pays in decalage_fleches:
         _incidence, min_couv, max_couv = bcg[pays]
         decX, decY = decalage_fleches[pays]
         normeDec = math.sqrt( decX*decX + decY*decY )
@@ -92,8 +92,6 @@ plt.hlines( incidence, min_couverture, max_couverture, colors='b' )
 plt.xlim(-10, 100)
 plt.ylim(0, plt.ylim()[1])
  
-annotations.legende_sources( fig, plt, sources, 0.08, 0.95 )
+gestion_figures.legende_sources( fig, plt, sources, 0.08, 0.95 )
 plt.show()
-fig.savefig( '../figures/BCG_Europe.svg', transparent=False, dpi=fig.dpi )     
-fig.savefig( '../figures/autres_formats/BCG_Europe.png', transparent=False, dpi=fig.dpi )     
-fig.savefig( '../figures/autres_formats/BCG_Europe.jpeg', transparent=False, dpi=fig.dpi )        
+gestion_figures.sauvegarde_figure(fig, "BCG_Europe")

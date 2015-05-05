@@ -10,7 +10,7 @@ import re # exoressions régulières
 import copy
 from scipy import stats
 
-import annotations
+import gestion_figures
 
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
@@ -40,6 +40,7 @@ def combinaisonVaccins( vaccins ):
     
 def nbDosesAvant( text, nbMoisMax ):
     text = text.replace( 'months', '' )
+    text = text.replace( 'month', '' )
     text = text.replace( 'birth', '0' )
     text = text.replace( ' ', '' )
     text = text.replace( ';', ',' )
@@ -48,9 +49,15 @@ def nbDosesAvant( text, nbMoisMax ):
     for dose in doses:
         if dose == '':
             continue
-        debut = dose.split('-')[0]
-        premier_mois = int( debut )
-        if premier_mois <= nbMoisMax:
+        intervalle = dose.split('-')
+        if len(intervalle) > 1:
+            debut, fin = intervalle
+        else:
+            debut = intervalle[0]
+            fin = debut
+        mois_retenu = int( debut )  # si on choisit le premier mois de l'intervalle comme date référence
+#         mois_retenu = ( int( debut ) + int( fin ) ) / 2    # si on prend la moyenne
+        if mois_retenu <= nbMoisMax:
             nbDoses += 1
     return nbDoses
 
@@ -65,10 +72,10 @@ def dosesAffichees( pays, vaccins_retenus=".*", types_retenus=".*" ):
 
 def tracerFleches( nb_doses, mortalite_tracee ):
     for pays in nb_doses:
-        if decalage_fleches.has_key(pays):
+        if pays in decalage_fleches:
             xx = dosesAffichees( pays )
             yy = mortalite_tracee[pays]
-            print pays, xx, yy
+            print(pays + " " + str(xx) + " " + str(yy))
             decX, decY = decalage_fleches[pays]
             decY *= plt.ylim()[1] / 6
             normeDec = math.sqrt( decX*decX + decY*decY )
@@ -133,7 +140,7 @@ def tracerPireCombinaison( mortalite, titre, vaccins, numGraphe ):
         r, _ = tracerPoints( mortalite, "", 0, combi, True )
         if r > max_r:
             max_r = r
-            print "Nouveau meilleur r = ", combi, r
+            print("Nouveau meilleur r = " + combi + " " + r )
             combi_pire_r = combi
     
     tracerPoints( mortalite, titre, numGraphe, combi_pire_r, False, "\n" + listeVaccinTexte(combi_pire_r) )
@@ -188,7 +195,7 @@ while nomPays != 'FIN': # and ligne <= 57:
     ligne += 1
     nomPays = cell( ligne, Colonnes.PAYS )
 
-print nb_doses
+print(nb_doses)
 
 # crée et prépare la figure
 sources = [u"Immunization Summary, Edition 2014, http://www.who.int/immunization/monitoring_surveillance/Immunization_Summary_2013.pdf (Calendrier vaccinal 2013)",
@@ -228,16 +235,15 @@ mortalite_triee = sorted(mortalite_infantile.items(), key=operator.itemgetter(1)
 #     else:
 #         print "Pas de donnees pour", pays[0]
        
-tracerPoints( mortalite_infantile, u'Taux de mortalité infantile', 1, vaccins )
-tracerPoints( mortalite_totale, u'Taux de mortalité général', 2, vaccins )
+tracerPoints( mortalite_infantile, u'Taux de mortalité infantile (pour 1000 naissances)', 1, vaccins )
+tracerPoints( mortalite_totale, u'Taux de mortalité général (pour 100.000)', 2, vaccins )
    
 calculPireCombinaison = False # prend du temps       
 if calculPireCombinaison:       
     tracerPireCombinaison( mortalite_infantile, u'Taux de mortalité infantile', vaccins, 1 )       
     tracerPireCombinaison( mortalite_totale, u'Taux de mortalité', vaccins, 2 )
     
-annotations.legende_sources( fig, plt, sources, 0.05, 0.95 )
+gestion_figures.legende_sources( fig, plt, sources, 0.05, 0.95 )
 plt.show()
-fig.savefig( '../figures/Doses_infantiles_et_mortalité.svg', transparent=False, dpi=fig.dpi )     
-fig.savefig( '../figures/autres_formats/Doses_infantiles_et_mortalité.png', transparent=False, dpi=fig.dpi )     
-fig.savefig( '../figures/autres_formats/Doses_infantiles_et_mortalité.jpeg', transparent=False, dpi=fig.dpi )        
+
+gestion_figures.sauvegarde_figure(fig, "Doses_infantiles_et_mortalité")

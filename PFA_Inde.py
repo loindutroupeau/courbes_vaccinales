@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import xlrd
 import numpy
 
-import annotations
+import gestion_figures
 
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
@@ -56,10 +56,7 @@ graphe_sauvage, = plt.plot( annees, polio_sauvage, linewidth=epaisseur, label=u"
 graphe_vaccinal, = plt.plot( annees, polio_vaccinale, linewidth=epaisseur, label=u"Poliomyélites issues du vaccin" )
 
 plt.legend(bbox_to_anchor=(0.1, 0.9), loc=2, borderaxespad=1)
-annotations.legende_sources( fig, plt, sources, 0.1, 0.93 )
+gestion_figures.legende_sources( fig, plt, sources, 0.1, 0.93 )
 plt.show()
 
-print "Sauvegarde de PFA_Inde en .svg, .jpeg et .png"
-fig.savefig( '../figures/PFA_Inde.svg', transparent=False, dpi=fig.dpi )     
-fig.savefig( '../figures/autres_formats/PFA_Inde.png', transparent=False, dpi=fig.dpi )     
-fig.savefig( '../figures/autres_formats/PFA_Inde.jpeg', transparent=False, dpi=fig.dpi )        
+gestion_figures.sauvegarde_figure( fig, "PFA_Inde" )        
