@@ -1,5 +1,10 @@
 import matplotlib.pyplot as plt
 
+def nouvelle_figure( longueur, largeur, sources ):
+    fig = plt.figure( figsize=(longueur, largeur + len(sources)*0.16), dpi=80, facecolor = "white", linewidth = 20, edgecolor = "gray" )
+    plt.rcParams.update({'font.size': 12})
+    return fig
+
 def legende_sources( fig, plt, liste_sources, marge_gauche=0.1, marge_droite=0.92 ):
     numSource = 0
     multX = fig.get_size_inches()[0] / 15
@@ -13,12 +18,20 @@ def legende_sources( fig, plt, liste_sources, marge_gauche=0.1, marge_droite=0.9
                   (0.95, 0.05), horizontalalignment='right', xycoords='figure fraction', fontsize=9 )     
 
 def sauvegarde_figure( fig, nom_fichier ):
+    qualite = 120
     print("Sauvegarde de " + nom_fichier + '.svg et .png')
-    fig.savefig( '../figures/' + nom_fichier + '.svg', transparent=False, dpi=fig.dpi, edgecolor = "gray" )     
-    fig.savefig( '../figures/autres_formats/' + nom_fichier + '.png', transparent=False )
-#     from pylab import rcParams
-#     rcParams['figure.figsize'] = 5, 10
-    plt.get_current_fig_manager().resize(100,50)
-    fig.savefig( '../figures/autres_formats/' + nom_fichier + '_petit.png', transparent=False, dpi=fig.dpi ) # pour les .odt   
+    fig.savefig( '../figures/' + nom_fichier + '.svg', transparent=False, dpi=qualite*2, edgecolor = "gray" )     
+    fig.savefig( '../figures/autres_formats/' + nom_fichier + '.png', transparent=False, dpi=qualite )
+    fig.savefig( '../figures/autres_formats/' + nom_fichier + '_petit.png', transparent=False, dpi=qualite/3 )
+
+    return
+
+    from PIL import Image
+    size = fig.get_size_inches()[0]*fig.dpi/4, fig.get_size_inches()[1]*fig.dpi/4
+    im = Image.open('../figures/autres_formats/' + nom_fichier + '.png')
+    im.thumbnail(size, Image.ANTIALIAS)
+    im.save('../figures/autres_formats/' + nom_fichier + '_petit.png', "PNG")
+#     plt.get_current_fig_manager().resize(100,50)
+#     fig.savefig( '../figures/autres_formats/' + nom_fichier + '_petit.png', transparent=False, dpi=fig.dpi ) # pour les .odt   
 #     fig.savefig( '../figures/autres_formats/' + nom_fichier + '_petit.png', transparent=False ) # pour les .odt   
     

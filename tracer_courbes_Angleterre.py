@@ -22,7 +22,8 @@ feuillePays = classeur.sheet_by_name( nom_des_feuilles[numFeuille] )
 annees = []
 finDeLigne = False
 ligne_annee = 2
-col = 2
+colonnePremiereDonnee = 3
+col = colonnePremiereDonnee
 while not finDeLigne:
     try:
         annee = int( feuillePays.cell_value( 1, col ) )
@@ -32,8 +33,7 @@ while not finDeLigne:
         finDeLigne = True
  
 tableau = {}
-colonneSource = 1
-colonnePremiereDonnee = 2
+colonneSource = 2
 numCourbe = 2
 premiereAnnee = 2014
 while True:
@@ -44,10 +44,13 @@ while True:
         numCourbe += 1
         continue
     nomCourbeTaux = "taux " + nomCourbe
+    nomCourbeAge = "age " + nomCourbe
     nomMaladie = nomCourbe.split()[0]
     nomSources = "sources " + nomMaladie
     tableau[nomCourbe] = numpy.zeros( len( annees ) ) * pylab.nan
     tableau[nomCourbeTaux] = numpy.zeros( len( annees ) ) * pylab.nan
+    tableau[nomCourbeAge] = feuillePays.cell_value( numCourbe, 1 )
+
     if not nomSources in tableau:
         tableau[nomSources] = []
     source = feuillePays.cell_value( numCourbe, colonneSource )
@@ -151,10 +154,10 @@ epaisseur_trait = 1.7
 
 def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture, afficher = True ):
     sources = tableau['sources ' + nom_maladie ]
-    fig = plt.figure( figsize=(15, 6.4 + len(sources)*0.16), dpi=80, facecolor = "white", linewidth = 20, edgecolor = "gray" )
+    fig = gestion_figures.nouvelle_figure( 15, 6.4, sources )
     ax = plt.subplot(1,2,1)
     fig.get_axes()[0].annotate(nom_maladie + ' (Angleterre et Pays de Galles)', 
-                               (0.5, 0.94), xycoords='figure fraction', ha='center', fontsize=16 )
+                               (0.5, 0.94), xycoords='figure fraction', ha='center' )
         
     y_taux = tableau['taux ' + nom_maladie + ' (D1)']
     plt.plot( x, y_taux, couleur_deces, linewidth=epaisseur_trait )
@@ -184,9 +187,9 @@ def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture
     plt.ylabel( u'Décès (par million)', color= couleur_deces )
     for fleche in fleches[nom_maladie]:
         angle = 0
-        if len(fleche) > 2 and fleche[2] / 2 == 1:
+        if len(fleche) > 2 and (fleche[2] >> 1) % 2 == 1:
             angle = 90       
-        if len(fleche) <= 2 or fleche[2] / 4 == 0:    
+        if len(fleche) <= 2 or (fleche[2] >> 3) % 2 == 0:    
             tracer_fleche( y_taux, fleche[0], fleche[1], angle, premiere_donnee_valide( y0_taux, y_taux ), ymax )
 
     # cacher les axes du haut et à droite dans le premier graphe
@@ -233,9 +236,9 @@ def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture
     
     for fleche in fleches[nom_maladie]:
         angle = 0
-        if len(fleche) > 2 and fleche[2] % 2 == 1:
+        if len(fleche) > 2 and (fleche[2] >> 0) % 2 == 1:
             angle = 90
-        if len(fleche) <= 2 or fleche[2] % 4 == 0:
+        if len(fleche) <= 2 or (fleche[2] >> 2) % 2 == 0:
             tracer_fleche( y, fleche[0], fleche[1], angle, nb_annees_couverture, ymax )
 
     if y2 != []:
@@ -259,20 +262,26 @@ def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture
     couv3 = []
     if nom_maladie + ' (C1)' in tableau:
         couv1 = tableau[nom_maladie + ' (C1)']
+        if tableau["age " + nom_maladie + ' (C1)'] != '':
+            age1 =  " [" + tableau["age " + nom_maladie + ' (C1)'] + "]"
+        else:
+            age1 = ''
     if nom_maladie + ' (C2)' in tableau:
         couv2 = tableau[nom_maladie + ' (C2)']
+        age2 =  " [" + tableau["age " + nom_maladie + ' (C2)'] + "]"
     if nom_maladie + ' (C3)' in tableau:
         couv3 = tableau[nom_maladie + ' (C3)']
+        age3 =  " [" + tableau["age " + nom_maladie + ' (C3)'] + "]"
     legende = ''
     if couv1 != []:
         ax_couv.plot( x[1:nb_annees_couverture], couv1[1:nb_annees_couverture], "g.", linewidth=epaisseur_trait )
-        legende = legende + u'• Couverture (%)\n'
+        legende = legende + u'• Couverture (%)' + age1 + '\n'
     if couv2 != []:            
         ax_couv.plot( x[1:nb_annees_couverture], couv2[1:nb_annees_couverture], "g*", linewidth=epaisseur_trait )
-        legende = legende + u'* Couverture 2e dose (%)\n'
+        legende = legende + u'* Couverture 2e dose (%)' + age2 + '\n'
     if couv3 != []:
         ax_couv.plot( x[1:nb_annees_couverture], couv3[1:nb_annees_couverture], "g-", linewidth=epaisseur_trait )
-        legende = legende + u'- Couverture 3e dose (%)'
+        legende = legende + u'- Couverture 3e dose (%)' + age3 + '\n'
     
     ax_couv.set_ylabel( legende, color='g')
     plt.axis([max( 1900, min(x[1:nb_annees_couverture]) ), max(x[1:nb_annees_couverture]), 0, 100])
