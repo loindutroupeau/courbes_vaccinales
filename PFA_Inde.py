@@ -44,7 +44,7 @@ while annee != 2015: # on saute l'année en cours car les données ne sont pas c
 
 # crée et prépare la figure
 sources = [u"Base de données OMS, https://extranet.who.int/polis/public/CaseCount.aspx"]
-fig = plt.figure( 0, figsize=(12, 6.4 + len(sources)*0.16), dpi=80, facecolor = "white", linewidth = 20, edgecolor = "gray" )
+fig = gestion_figures.FigureVaccination( 12, 6.4, sources, False )
 plt.xlabel( u"Année" )
 plt.ylabel( u"Nombre annuel" )
 plt.annotate( u"Cas de paralysies et de poliomyélites en Inde", (0.5, 0.94), xycoords='figure fraction', ha='center', fontsize=14 )
@@ -56,7 +56,7 @@ graphe_sauvage, = plt.plot( annees, polio_sauvage, linewidth=epaisseur, label=u"
 graphe_vaccinal, = plt.plot( annees, polio_vaccinale, linewidth=epaisseur, label=u"Poliomyélites issues du vaccin" )
 
 plt.legend(bbox_to_anchor=(0.1, 0.9), loc=2, borderaxespad=1)
-gestion_figures.legende_sources( fig, plt, sources, 0.1, 0.93 )
+fig.legende_sources( plt, sources, 0.1, 0.93 )
 plt.show()
 
-gestion_figures.sauvegarde_figure( fig, "PFA_Inde" )        
+fig.sauvegarde_figure( "PFA_Inde" )        

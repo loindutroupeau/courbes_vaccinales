@@ -56,13 +56,13 @@ while nomPays != 'FIN':
 
 # crée et prépare la figure
 sources = [u"Euro Surveill 2006;11(3): 6-11", "(http://opac.invs.sante.fr/doc_num.php?explnum_id=4827)"]
-fig = plt.figure( 0, figsize=(12, 6.4 + len(sources)*0.16), dpi=80, facecolor = "white", linewidth = 20, edgecolor = "gray" )
+fig = gestion_figures.FigureVaccination( 12, 6.4, sources, False )
 
 plt.xlabel( u"Couverture du vaccin BCG (%)\n[intervalle si incertitude ; négatif si pas d'utilisation systématique]" )
 plt.ylabel( u'Incidence (taux pour 100.000)' )
 plt.annotate( u"Couverture BCG en 2003 et incidence selon les pays d'Europe", 
                            (0.5, 0.94), xycoords='figure fraction', ha='center', fontsize=14 )
-fig.subplots_adjust(bottom=0.2)
+fig.get().subplots_adjust(bottom=0.2)
 
 # trace des flèches pour indiquer certains pays
 decalage_fleches = {}
@@ -92,6 +92,6 @@ plt.hlines( incidence, min_couverture, max_couverture, colors='b' )
 plt.xlim(-10, 100)
 plt.ylim(0, plt.ylim()[1])
  
-gestion_figures.legende_sources( fig, plt, sources, 0.08, 0.95 )
+fig.legende_sources( plt, sources, 0.08, 0.95 )
 plt.show()
-gestion_figures.sauvegarde_figure(fig, "BCG_Europe")
+fig.sauvegarde_figure("BCG_Europe")

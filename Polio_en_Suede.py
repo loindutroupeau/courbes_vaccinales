@@ -44,23 +44,23 @@ while annee != 1965: # on saute l'année en cours car les données ne sont pas c
 
 # crée et prépare la figure
 sources = [u"The Cutter incident and the development of a Swedish polio vaccine, 1952-1957, http://scielo.isciii.es/pdf/dyn/v32n2/03.pdf"]
-fig = plt.figure( 0, figsize=(12, 6.4 + len(sources)*0.16), dpi=80, facecolor = "white", linewidth = 20, edgecolor = "gray" )
+fig = gestion_figures.FigureVaccination( 12, 6.4, sources, False )
 plt.xlabel( u"Année" )
 plt.ylabel( u"Poliomyélites par an" )
 plt.annotate( u"Poliomyélites et vaccination en Suède", (0.5, 0.94), xycoords='figure fraction', ha='center', fontsize=14 )
 
 # trace les courbes et les légendes
 epaisseur=3
-graphe_pfa, = plt.plot( annees, polio_para, linewidth=epaisseur, label=u"Paralysies flasques aiguës", c='red' )
-graphe_sauvage, = plt.plot( annees, polio_non_para, linewidth=epaisseur, label=u"Poliomyélites sauvages", c='blue' )
+graphe_pfa, = plt.plot( annees, polio_para, linewidth=epaisseur, label=u"Paralysies flasques aiguës", color='red' )
+graphe_sauvage, = plt.plot( annees, polio_non_para, linewidth=epaisseur, label=u"Poliomyélites sauvages", color='blue' )
 
 ax = plt.twinx()
-graphe_vaccinal, = plt.plot( annees, nb_vaccins, linewidth=epaisseur, label=u"Poliomyélites issus du vaccin", c='green' )
+graphe_vaccinal, = plt.plot( annees, nb_vaccins, linewidth=epaisseur, label=u"Poliomyélites issus du vaccin", color='green' )
 
 plt.legend([graphe_pfa, graphe_sauvage, graphe_vaccinal], [u"Polios paralytiques", u"Polios non paralytiques", 
            u"Vaccins"], bbox_to_anchor=(0.3, 0.9), loc=2, borderaxespad=1)
-gestion_figures.legende_sources( fig, plt, sources, 0.1, 0.9 )
+fig.legende_sources( plt, sources, 0.1, 0.9 )
 plt.ylabel( u"Nombre de vaccins cumulés (milliers)" )
 plt.show()
 
-gestion_figures.sauvegarde_figure( fig, "Polio_en_Suède")
+fig.sauvegarde_figure( "Polio_en_Suède" )

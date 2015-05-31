@@ -84,7 +84,7 @@ def tracerFleches( nb_doses, mortalite_tracee ):
                           arrowprops=dict(color='gray',shrink=0.05, width=0.8, headwidth = 3, frac=0.2/normeDec ) )
     
 
-def tracerPoints( mortalite_tracee, titreY, numGraphe, combinaisonVaccins, nePasTracer=False, restrictionVaccin="" ):    
+def tracerPoints( mortalite_tracee, titreY, numGraphe, combinaisonVaccins, pourLivre, nePasTracer=False, restrictionVaccin="" ):    
     # par exemple vaccins_retenus = u"^.*(BCG|Diphtérie|Tétanos|ROR).*$"
     if combinaisonVaccins == []:
         return 0,1
@@ -105,17 +105,19 @@ def tracerPoints( mortalite_tracee, titreY, numGraphe, combinaisonVaccins, nePas
     # calcule et trace la corrélation
     a, b, r, valeur_p, _ = stats.linregress(x,y)
 
-    if not nePasTracer:    
-        plt.subplot(1, 2, numGraphe) 
-        plt.xlabel( u"Nombre de doses du calendrier avant 12 mois" + restrictionVaccin )        
+    if not nePasTracer:
+        if not pourLivre:
+            plt.subplot(1, 2, numGraphe) 
+        if not pourLivre or numGraphe == 1:
+            plt.annotate( u"Calendrier vaccinal et mortalité selon les pays d'Europe", 
+                          (0.5, 0.94), xycoords='figure fraction', ha='center')
         plt.ylabel( titreY )
-        plt.annotate( u"Calendrier vaccinal et mortalité selon les pays d'Europe", 
-                               (0.5, 0.94), xycoords='figure fraction', ha='center', fontsize=14 )
-        plt.scatter( x, y, c='b', s=30, marker='o' )
+        plt.xlabel( u"Nombre de doses du calendrier avant 12 mois" + restrictionVaccin )        
+        plt.scatter( x, y, s=30, marker='o' )
         tracerFleches( nb_doses, mortalite_tracee )        
         x_max = plt.xlim()[1]
         marge = x_max / 20       
-        plt.plot([marge, x_max-marge],[b+a,b+a*(x_max-marge)],linewidth=2,c='r',ls='--')
+        plt.plot([marge, x_max-marge],[b+a,b+a*(x_max-marge)], linewidth=2, color='red', ls='--')
         r_texte = "r = " + "%0.2f" % r
         p_texte = "p = " + "%0.4f" % valeur_p
         plt.annotate( r_texte + "\n" + p_texte, color='red', xy=(0,0), xytext=(marge,b+marge*a + 0.5) )
@@ -137,13 +139,13 @@ def tracerPireCombinaison( mortalite, titre, vaccins, numGraphe ):
     combinaisons_vaccins = combinaisonVaccins( vaccins )
     max_r = 0
     for combi in combinaisons_vaccins:
-        r, _ = tracerPoints( mortalite, "", 0, combi, True )
+        r, _ = tracerPoints( mortalite, "", 0, combi, False, True )
         if r > max_r:
             max_r = r
             print("Nouveau meilleur r = " + combi + " " + r )
             combi_pire_r = combi
     
-    tracerPoints( mortalite, titre, numGraphe, combi_pire_r, False, "\n" + listeVaccinTexte(combi_pire_r) )
+    tracerPoints( mortalite, titre, numGraphe, combi_pire_r, False, False, "\n" + listeVaccinTexte(combi_pire_r) )
     
     
 fichier = u"../Données_recueillies/Vaccins_et_mortalité_infantile.xls"
@@ -198,12 +200,16 @@ while nomPays != 'FIN': # and ligne <= 57:
 print(nb_doses)
 
 # crée et prépare la figure
+pourLivre = True
 sources = [u"Immunization Summary, Edition 2014, http://www.who.int/immunization/monitoring_surveillance/Immunization_Summary_2013.pdf (Calendrier vaccinal 2013)",
            u"https://www.cia.gov/library/publications/the-world-factbook/rankorder/2091rank.html (Mortalité infantile 2014)",
            u"https://www.cia.gov/library/publications/the-world-factbook/rankorder/2066rank.html (Mortalité 2014)"]
-fig = plt.figure( 0, figsize=(16, 6.4 + len(sources)*0.16), dpi=80, facecolor = "white", linewidth = 20, edgecolor = "gray" )
- 
-fig.subplots_adjust(bottom=0.2)
+if pourLivre:
+    fig = gestion_figures.FigureVaccination( 16, 11.4, '', pourLivre )
+else:
+    fig = gestion_figures.FigureVaccination( 16, 6.4, sources, pourLivre )
+     
+fig.get().subplots_adjust(bottom=0.2)
  
 # trace des flèches pour indiquer certains pays
 decalage_fleches = {}
@@ -235,15 +241,21 @@ mortalite_triee = sorted(mortalite_infantile.items(), key=operator.itemgetter(1)
 #     else:
 #         print "Pas de donnees pour", pays[0]
        
-tracerPoints( mortalite_infantile, u'Taux de mortalité infantile (pour 1000 naissances)', 1, vaccins )
-tracerPoints( mortalite_totale, u'Taux de mortalité général (pour 100.000)', 2, vaccins )
+tracerPoints( mortalite_infantile, u'Taux de mortalité infantile (pour 1000 naissances)', 1, vaccins, pourLivre )
+if pourLivre:
+    fig.sauvegarde_figure("Doses_infantiles_et_mortalité_haut")
+    fig = gestion_figures.FigureVaccination( 16, 11.4, sources, pourLivre )
+tracerPoints( mortalite_totale, u'Taux de mortalité général (pour 100.000)', 2, vaccins, pourLivre )
    
 calculPireCombinaison = False # prend du temps       
 if calculPireCombinaison:       
     tracerPireCombinaison( mortalite_infantile, u'Taux de mortalité infantile', vaccins, 1 )       
     tracerPireCombinaison( mortalite_totale, u'Taux de mortalité', vaccins, 2 )
-    
-gestion_figures.legende_sources( fig, plt, sources, 0.05, 0.95 )
-plt.show()
 
-gestion_figures.sauvegarde_figure(fig, "Doses_infantiles_et_mortalité")
+fig.legende_sources( plt, sources, 0.05, 0.95 )
+# plt.show()
+
+if pourLivre:
+    fig.sauvegarde_figure( "Doses_infantiles_et_mortalité" + "_bas" )        
+else:
+    fig.sauvegarde_figure( "Doses_infantiles_et_mortalité" )        

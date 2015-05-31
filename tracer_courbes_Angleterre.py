@@ -106,13 +106,13 @@ def add_subplot_axes(ax,rect,axisbg='w'):
     width *= rect[2]
     height *= rect[3]
     subax = fig.add_axes([x,y,width,height],axisbg=axisbg)
-    x_labelsize = subax.get_xticklabels()[0].get_size()
-    y_labelsize = subax.get_yticklabels()[0].get_size()
-    x_labelsize *= rect[2]**0.5
-    y_labelsize *= rect[3]**0.5
-    subax.xaxis.set_tick_params(labelsize=x_labelsize)
-    subax.yaxis.set_tick_params(labelsize=y_labelsize)
-    return subax, x_labelsize, y_labelsize
+    policeEchellex = subax.get_xticklabels()[0].get_size()
+    policeEchelley = subax.get_yticklabels()[0].get_size()
+    policeEchellex *= rect[2]**0.5
+    policeEchelley *= rect[3]**0.5
+    subax.xaxis.set_tick_params(labelsize=policeEchellex)
+    subax.yaxis.set_tick_params(labelsize=policeEchelley)
+    return subax, policeEchellex, policeEchelley
 
 x = annees
 y2 = []
@@ -152,12 +152,19 @@ couleur_incidence = '#bb4444'
 couleur_couverture = "g"
 epaisseur_trait = 1.7
 
-def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture, afficher = True ):
+def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture, pourLivre, afficher = True ):
     sources = tableau['sources ' + nom_maladie ]
-    fig = gestion_figures.nouvelle_figure( 15, 6.4, sources )
-    ax = plt.subplot(1,2,1)
-    fig.get_axes()[0].annotate(nom_maladie + ' (Angleterre et Pays de Galles)', 
-                               (0.5, 0.94), xycoords='figure fraction', ha='center' )
+    if pourLivre:
+        fig = gestion_figures.FigureVaccination( 15, 10.1, '', pourLivre )
+        fig.get().subplots_adjust( left=0.07, right=0.93 )
+        yTitre = 0.94
+        ax = plt.axes()
+    else:
+        fig = gestion_figures.FigureVaccination( 15, 6.4, sources, pourLivre )
+        yTitre = 0.94
+        ax = plt.subplot(1,2,1)
+    fig.get().get_axes()[0].annotate(nom_maladie + ' (Angleterre et Pays de Galles)', 
+                               (0.5, yTitre), xycoords='figure fraction', ha='center' )
         
     y_taux = tableau['taux ' + nom_maladie + ' (D1)']
     plt.plot( x, y_taux, couleur_deces, linewidth=epaisseur_trait )
@@ -193,18 +200,33 @@ def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture
             tracer_fleche( y_taux, fleche[0], fleche[1], angle, premiere_donnee_valide( y0_taux, y_taux ), ymax )
 
     # cacher les axes du haut et à droite dans le premier graphe
+    if pourLivre:
+        policeEchelle = 18
+    else:
+        policeEchelle = 10
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
-          
+    ax.xaxis.set_tick_params(labelsize=policeEchelle)
+    ax.yaxis.set_tick_params(labelsize=policeEchelle)
+
     # gros-plan 1e graphique, avec l'incidence
     nb_annees_gros_plan = premiereAnnee - date_gros_plan
-    multY = 6 / fig.get_size_inches()[1] # mise à jour avec nouvelle taille de fenêtre, et tenant compte de la légende
-    rect_dont_legende = [rect_gros_plan[0], (1-multY) + rect_gros_plan[1] * multY,
-                         rect_gros_plan[2], rect_gros_plan[3] * multY]
-    ax1, _, y_labelsize = add_subplot_axes( ax, rect_dont_legende )
-    ax1.yaxis.set_tick_params(labelsize=y_labelsize)
+    if pourLivre:
+        multX = 1.35
+        multX2 = 1.1
+        multY = 10 / fig.get().get_size_inches()[1] # mise à jour avec nouvelle taille de fenêtre, et tenant compte de la légende
+    else:
+        multX = 1
+        multX2 = 1
+        multY = 6 / fig.get().get_size_inches()[1] # mise à jour avec nouvelle taille de fenêtre, et tenant compte de la légende
+    rect_dont_legende = [rect_gros_plan[0] * multX, (1-multY) + rect_gros_plan[1] * multY,
+                         rect_gros_plan[2] * multX2, rect_gros_plan[3] * multY]
+    ax1, _, _ = add_subplot_axes( ax, rect_dont_legende )
+    ax1.xaxis.set_tick_params(labelsize=policeEchelle*0.8)
+    ax1.yaxis.set_tick_params(labelsize=policeEchelle*0.8)
+
     plt.plot( x[1:nb_annees_gros_plan], y_taux[1:nb_annees_gros_plan], couleur_deces, linewidth=epaisseur_trait )
 
     if y2_taux != []: 
@@ -216,7 +238,8 @@ def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture
         ax2 = ax1.twinx()
         ax2.plot(x[1:nb_annees_gros_plan], cas_taux[1:nb_annees_gros_plan], couleur_incidence, linewidth=epaisseur_trait)
         ax2.set_ylim( [0, ax2.get_ylim()[1]] )
-        ax2.yaxis.set_tick_params(labelsize=y_labelsize )
+        ax2.xaxis.set_tick_params(labelsize=policeEchelle*0.8)
+        ax2.yaxis.set_tick_params(labelsize=policeEchelle*0.8)
         ax2.set_ylabel('Incidence (par million)', color=couleur_incidence)
 
     if nom_maladie + ' (I2)' in tableau:
@@ -226,14 +249,21 @@ def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture
 
     # 2e graphique : couverture contre maladie
     nb_annees_couverture = premiereAnnee - date_couverture
-    ax = plt.subplot(1,2,2)
+    if pourLivre:
+        fig.sauvegarde_figure( nom_maladie + "_haut" )        
+        fig = gestion_figures.FigureVaccination( 15, 10.1, sources, pourLivre )
+        ax = plt.axes()
+    else:
+        ax = plt.subplot(1,2,2)
     plt.xlabel( u'Année' )
     plt.ylabel( u'Décès', color=couleur_deces)
     y = tableau[nom_maladie + ' (D1)']
     ymax = numpy.nanmax( y[0:nb_annees_couverture] )
     plt.plot( x[1:nb_annees_couverture], y[1:nb_annees_couverture], couleur_deces, linewidth=epaisseur_trait )
     ax.set_ylim( [0, ax.get_ylim()[1]] )
-    
+    ax.xaxis.set_tick_params(labelsize=policeEchelle)
+    ax.yaxis.set_tick_params(labelsize=policeEchelle)
+   
     for fleche in fleches[nom_maladie]:
         angle = 0
         if len(fleche) > 2 and (fleche[2] >> 0) % 2 == 1:
@@ -246,13 +276,15 @@ def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture
     
     # Incidence sur l'axe de droite
     ax2 = ax.twinx()
-    ax2.yaxis.set_tick_params(labelsize=y_labelsize)
     ax2.set_ylabel( "Nombre de cas", color=couleur_incidence)
+    ax2.xaxis.set_tick_params(labelsize=policeEchelle)
+    ax2.yaxis.set_tick_params(labelsize=policeEchelle)
     plt.plot( x[1:nb_annees_couverture], cas[1:nb_annees_couverture], couleur_incidence, linewidth=epaisseur_trait )
     
     # Couverture vaccinale sur l'axe de droite
     ax_couv = ax.twinx()
-    ax_couv.yaxis.set_tick_params(labelsize=y_labelsize)    
+    ax_couv.xaxis.set_tick_params(labelsize=policeEchelle)
+    ax_couv.yaxis.set_tick_params(labelsize=policeEchelle)
     ax_couv.spines["right"].set_position(("axes", 1.17)) # échelle décalée vers la droite
     make_patch_spines_invisible(ax_couv)
     ax_couv.spines["right"].set_visible(True)
@@ -272,23 +304,33 @@ def tracer_courbes( nom_maladie, rect_gros_plan, date_gros_plan, date_couverture
     if nom_maladie + ' (C3)' in tableau:
         couv3 = tableau[nom_maladie + ' (C3)']
         age3 =  " [" + tableau["age " + nom_maladie + ' (C3)'] + "]"
-    legende = ''
+    legende_couverture = ''
     if couv1 != []:
         ax_couv.plot( x[1:nb_annees_couverture], couv1[1:nb_annees_couverture], "g.", linewidth=epaisseur_trait )
-        legende = legende + u'• Couverture (%)' + age1 + '\n'
+        legende_couverture += u'• Couverture (%)' + age1 + '\n'
     if couv2 != []:            
         ax_couv.plot( x[1:nb_annees_couverture], couv2[1:nb_annees_couverture], "g*", linewidth=epaisseur_trait )
-        legende = legende + u'* Couverture 2e dose (%)' + age2 + '\n'
+        legende_couverture += u'* Couverture 2e dose (%)' + age2 + '\n'
     if couv3 != []:
         ax_couv.plot( x[1:nb_annees_couverture], couv3[1:nb_annees_couverture], "g-", linewidth=epaisseur_trait )
-        legende = legende + u'- Couverture 3e dose (%)' + age3 + '\n'
+        legende_couverture += u'- Couverture 3e dose (%)' + age3 + '\n'
     
-    ax_couv.set_ylabel( legende, color='g')
+    ax_couv.set_ylabel( legende_couverture, color='g')
     plt.axis([max( 1900, min(x[1:nb_annees_couverture]) ), max(x[1:nb_annees_couverture]), 0, 100])
-    gestion_figures.legende_sources( fig, plt, sources, 0.07, 0.88 )
+    if pourLivre: # and legende_couverture != '':
+        margeDroite = 0.78
+    else:
+        margeDroite = 0.88
+    if nom_maladie == 'Tuberculose':     
+        fig.legende_sources( plt, sources, 0.1, margeDroite )
+    else:
+        fig.legende_sources( plt, sources, 0.07, margeDroite )
     if afficher:
-        plt.show()        
-    gestion_figures.sauvegarde_figure( fig, nom_maladie )        
+        plt.show()
+    if pourLivre:
+        fig.sauvegarde_figure( nom_maladie + "_bas" )        
+    else:
+        fig.sauvegarde_figure( nom_maladie )        
 
 def tracer_fleche( courbe, date, annotation, angle, nb_annees, ymax = -1 ):
     if ymax == -1:
@@ -316,38 +358,50 @@ def premiere_donnee_valide( y0, y ):   # en quelle année (son indice) on trouve
         i = i + 1
     return last_non_nan
     
-tracer_coqueluche = True
+tracer_coqueluche = False
 tracer_diphterie = False
 # tracer_hepatiteB = False    # pas de données de décès
-tracer_polio = False
+tracer_polio = True
 tracer_rougeole = False
 tracer_scarlatine = False   
 tracer_tetanos = False
-tracer_tuberculose = False #: incidence avant 1965 ? couverture ?
+tracer_tuberculose = True #: incidence avant 1965 ? couverture ?
 
 tracer_tout = False
-afficher = True
+afficher = False
+pourLivre = True
 
 if( tracer_coqueluche or tracer_tout ):
-    tracer_courbes( u'Coqueluche', [0.25,0.35,0.57,0.6], 1930, 1940, afficher )
+    tracer_courbes( u'Coqueluche', [0.25,0.35,0.57,0.6], 1930, 1940, pourLivre, afficher )
 
 if( tracer_diphterie or tracer_tout ):
-    tracer_courbes( u'Diphtérie', [0.32,0.39,0.5,0.57], 1927, 1948, afficher )
+    tracer_courbes( u'Diphtérie', [0.32,0.39,0.5,0.57], 1927, 1948, pourLivre, afficher )
 
 # if( tracer_hepatiteB or tracer_tout ):
-#     tracer_courbes( u'Hépatite B', [0.37,0.39,0.5,0.57], [0.49,0.47,0.30,0.45], 1950, 1937, afficher )
+#     tracer_courbes( u'Hépatite B', [0.37,0.39,0.5,0.57], [0.49,0.47,0.30,0.45], 1950, 1937, pourLivre, afficher )
 
 if( tracer_polio or tracer_tout ):
-    tracer_courbes( u'Poliomyélite', [0.37,0.39,0.5,0.57], 1940, 1958, afficher )
+    tracer_courbes( u'Poliomyélite', [0.33,0.39,0.5,0.57], 1940, 1958, pourLivre, afficher )
 
 if( tracer_rougeole or tracer_tout ):
-    tracer_courbes( 'Rougeole', [0.37,0.29,0.45,0.67], 1940, 1955, afficher )
+    tracer_courbes( 'Rougeole', [0.37,0.29,0.45,0.67], 1940, 1955, pourLivre, afficher )
 
 if( tracer_scarlatine or tracer_tout ):
-    tracer_courbes( u'Scarlatine', [0.2,0.29,0.57,0.67], 1910, 1940, afficher )
+    tracer_courbes( u'Scarlatine', [0.2,0.29,0.57,0.67], 1910, 1940, pourLivre, afficher )
 
 if( tracer_tetanos or tracer_tout ):
-    tracer_courbes( u'Tétanos', [0.3,0.36,0.53,0.6], 1950, 1940, afficher )
+    tracer_courbes( u'Tétanos', [0.3,0.36,0.53,0.6], 1950, 1940, pourLivre, afficher )
 
 if( tracer_tuberculose or tracer_tout ):
-    tracer_courbes( u'Tuberculose', [0.40,0.39,0.4,0.57], 1910, 1940, afficher )
+    tracer_courbes( u'Tuberculose', [0.40,0.39,0.4,0.57], 1910, 1940, pourLivre, afficher )
+    
+# import os
+# from PIL import Image
+# size = 800, 600
+# 
+# os.chdir("../Figures/autres_formats")
+# outfile = "Coqueluche_petit.png"
+# infile = "Coqueluche.png"
+# im = Image.open(infile)
+# im.thumbnail(size, Image.ANTIALIAS)
+# im.save(outfile, "PNG")
